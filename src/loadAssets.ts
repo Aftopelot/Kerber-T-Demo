@@ -16,15 +16,22 @@ export interface LoadAssetsResult {
 }
 
 export async function loadAssets(): Promise<LoadAssetsResult> {
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const resolveAssetPath = (assetPath: string): string => {
+    if (assetPath.startsWith('data:')) return assetPath;
+    const cleanPath = assetPath.replace(/^\/+/, '');
+    return `${baseUrl}${cleanPath}`;
+  };
+
   // Setup DRACO decompression
   const dracoLoader = new DRACOLoader();
-  dracoLoader.setDecoderPath('/draco/');
+  dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
 
   const gltfLoader = new GLTFLoader();
   gltfLoader.setDRACOLoader(dracoLoader);
 
   // Load GLB model
-  const gltf = await gltfLoader.loadAsync('/models/kerber-t-demo.glb');
+  const gltf = await gltfLoader.loadAsync(resolveAssetPath('/models/kerber-t-demo.glb'));
   const model = gltf.scene as THREE.Group;
   const animations = gltf.animations || [];
   
@@ -41,7 +48,7 @@ export async function loadAssets(): Promise<LoadAssetsResult> {
   // Load all screen textures from config
   const screenKeys = Object.keys(SCREEN_ASSET_MAP) as string[];
   for (const key of screenKeys) {
-    const path = SCREEN_ASSET_MAP[key as any];
+    const path = resolveAssetPath(SCREEN_ASSET_MAP[key as any]);
     try {
       const texture = await textureLoader.loadAsync(path);
       // Ensure correct color space for screen textures

@@ -44,7 +44,9 @@ async function main() {
     scene.background = new THREE.Color(0x222222);
 
     try {
-      const hdri = await new RGBELoader().loadAsync('/models/neutral.hdr');
+      const baseUrl = import.meta.env.BASE_URL || '/';
+      const hdriPath = `${baseUrl}models/neutral.hdr`;
+      const hdri = await new RGBELoader().loadAsync(hdriPath);
       hdri.mapping = THREE.EquirectangularReflectionMapping;
       scene.environment = hdri;
       console.log('[Main] HDR environment loaded');
